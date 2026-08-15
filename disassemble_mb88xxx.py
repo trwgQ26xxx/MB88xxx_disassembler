@@ -1,5 +1,5 @@
 # Disassembler for the MB88400H/MB88500H microcontrollers
-# 03.07.2026 by trwgQ26xxx
+# 14.08.2026 by trwgQ26xxx
 # Based on MAME MB88xx CPU dissasembler by Ernesto Corvi
 # See: https://github.com/mamedev/mame/tree/master/src/devices/cpu/mb88xx
 
@@ -66,7 +66,7 @@ def disassemble(data):
 		0x14: ("TYA",  "AC <- Y"),
 		0x15: ("TTHA", "AC <- TH"),
 		0x16: ("TTLA", "AC <- TL"),
-		0x17: ("TSA",  "AC <- SBL"),
+		0x17: ("TSA",  "AC <- SB (MB88401H/501H/503H) or AC <- SBL, X <- SBH (MB88505H 8-bit mode)"),
 		0x18: ("DCY",  "Y <- Y-1"),
 		0x19: ("DCM",  "M(X,Y) <- M(X,Y)-1"),
 		0x1A: ("STDC", "M(X,Y) <- AC, Y <- Y-1"),
@@ -145,8 +145,10 @@ def disassemble(data):
 					inst = "ICX ; X <- X+1"
 				elif ext == 0xAD:
 					inst = "RST ; System initialization"
+				elif ext == 0xAE:
+					inst = "STBY ; Initiate standby mode (MB88500H only)"
 				else:
-					inst = f"EXT ILLEGAL ${ext:02X}"
+					inst = f"EXT ILLEGAL ${ext:02X} ; undefined"
 		elif op == 0x3E:
 			imm = data[pc] if pc < len(data) else 0
 			if pc < len(data):
@@ -173,7 +175,7 @@ def disassemble(data):
 			inst = f"XYD {(op & 3)+4} ; Y <-> M(0,{(op & 3)+4})"
 
 		elif 0x58 <= op <= 0x5F:
-			inst = f"LXI #${op & 7:X} ; X <- {op & 7}"
+			inst = f"LXI #${op & 7:X} ; X3 <- 0, X[2:0] <- {op & 7}"
 
 		elif 0x60 <= op <= 0x6F:
 			lo = data[pc] if pc < len(data) else 0
@@ -214,7 +216,7 @@ def main():
 
 	print("-------------------------------------------------------")
 	print("Disassembler for the MB88400H/MB88500H microcontrollers")
-	print("               03.07.2026 by trwgQ26xxx                ")
+	print("               14.08.2026 by trwgQ26xxx                ")
 	print("-------------------------------------------------------")
 	print("Based on MAME MB88xx CPU dissasembler  by Ernesto Corvi")
 	print("-------------------------------------------------------")
